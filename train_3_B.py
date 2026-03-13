@@ -26,7 +26,7 @@ torch.backends.cudnn.allow_tf32 = False
 # PY_DIR = os.path.dirname(os.path.abspath(__file__))
 # JOB_DIR = os.environ.get("JOB_DIR", PY_DIR)             # bash 所在目录（推荐从 bash 传入）
 # BASE_DIR = os.path.abspath(os.path.join(JOB_DIR, "..")) # bash 的上一级目录
-kaggle_dir='/kaggle/working/pth_2324_loss4/'
+kaggle_dir='/kaggle/working/pth_2324_loss5/'
 ##########################################################################################
 def standardize(data):
     mean = data.mean()
@@ -446,16 +446,16 @@ def train_and_evaluate_from_npy(
     # time_full = np.load(f"/thfs1/home/qx_hyt/hpp/data/station_AI/test_24_train/54456/train_time.npy", allow_pickle=True)
     # print(time_full[24:])
     time_full=time
-    plot_chain_rows_by_step(trues,preds,  spd_train_all, time_full,unit='m/s',tag='direct', auto_time=True)
-    plot_timeseries_stitched(trues,preds, spd_train_all,time_full, unit='m/s', tag='direct')
+    # plot_chain_rows_by_step(trues,preds,  spd_train_all, time_full,unit='m/s',tag='direct', auto_time=True)
+    # plot_timeseries_stitched(trues,preds, spd_train_all,time_full, unit='m/s', tag='direct')
     np.save(os.path.join(kaggle_dir, "spd_train_all.npy"), spd_train_all)
     np.save(os.path.join(kaggle_dir, "time_full.npy"), time_full)
-    plot_kde2d_full(trues,preds, unit='m/s', tag='direct',
-                nx=200, ny=200, 
-                show_contour=True,
-                bw_method=None)  
-    plot_scatter_by_leads(trues,preds,  unit='m/s', tag='direct')
-    plot_residual_hist_all(trues,preds,bins=40, unit='m/s', tag='direct')
+    # plot_kde2d_full(trues,preds, unit='m/s', tag='direct',
+    #             nx=200, ny=200, 
+    #             show_contour=True,
+    #             bw_method=None)  
+    # plot_scatter_by_leads(trues,preds,  unit='m/s', tag='direct')
+    # plot_residual_hist_all(trues,preds,bins=40, unit='m/s', tag='direct')
     yt = trues.reshape(-1)
     yp = preds.reshape(-1)
     err = yp - yt
@@ -465,7 +465,7 @@ def train_and_evaluate_from_npy(
         include_outside=True,   # 同时给出区间外比例
         
     )
-    plot_bin_percentages(labels, perc, tag='direct')
+    # plot_bin_percentages(labels, perc, tag='direct')
 ##########################################################################
     edges = np.array([1.5, 3.3, 5.4, 7.9, 10.7], dtype=float)
     labels = [
@@ -483,45 +483,45 @@ def train_and_evaluate_from_npy(
         return np.digitize(speed_1d, edges, right=False)  #right=False左闭右开
 ################################################################################################
     # ===== 2) 逐 lead 画 24 张图 =====
-    B, F = trues.shape   # F=24
-    x = np.arange(len(labels))
-    w = 0.22  # 柱宽
+    # B, F = trues.shape   # F=24
+    # x = np.arange(len(labels))
+    # w = 0.22  # 柱宽
 
-    for lead in range(F):
-        t = trues[:, lead].astype(float)
-        p = preds[:, lead].astype(float)
-        s = spd_train_all[:, lead].astype(float)
+    # for lead in range(F):
+    #     t = trues[:, lead].astype(float)
+    #     p = preds[:, lead].astype(float)
+    #     s = spd_train_all[:, lead].astype(float)
 
-        lvl = wind_level_index(t, edges)  # 用 True 风速分风级（最合理）
+    #     lvl = wind_level_index(t, edges)  # 用 True 风速分风级（最合理）
 
-        mae_pred = np.full(len(labels), np.nan, dtype=float)
-        mae_nwp  = np.full(len(labels), np.nan, dtype=float)
-        cnt      = np.zeros(len(labels), dtype=int)
+    #     mae_pred = np.full(len(labels), np.nan, dtype=float)
+    #     mae_nwp  = np.full(len(labels), np.nan, dtype=float)
+    #     cnt      = np.zeros(len(labels), dtype=int)
 
-        for k in range(len(labels)):
-            m = (lvl == k)
-            cnt[k] = int(m.sum())
-            if m.any():
-                mae_pred[k] = np.mean(np.abs(p[m] - t[m]))
-                mae_nwp[k]  = np.mean(np.abs(s[m] - t[m]))
+    #     for k in range(len(labels)):
+    #         m = (lvl == k)
+    #         cnt[k] = int(m.sum())
+    #         if m.any():
+    #             mae_pred[k] = np.mean(np.abs(p[m] - t[m]))
+    #             mae_nwp[k]  = np.mean(np.abs(s[m] - t[m]))
 
-        plt.figure(figsize=(6,4))
-        plt.bar(x - w/2, mae_pred, width=w, label="DL Pred vs True",color='tab:red')
-        plt.bar(x + w/2, mae_nwp,  width=w, label="NWP(Interp) vs True",color='tab:blue')
+    #     plt.figure(figsize=(6,4))
+    #     plt.bar(x - w/2, mae_pred, width=w, label="DL Pred vs True",color='tab:red')
+    #     plt.bar(x + w/2, mae_nwp,  width=w, label="NWP(Interp) vs True",color='tab:blue')
 
-        plt.xticks(x, labels)
-        plt.ylabel("MAE [m/s]")
-        plt.title(f"Lead {lead+1:02d}h MAE by Wind Level")
+    #     plt.xticks(x, labels)
+    #     plt.ylabel("MAE [m/s]")
+    #     plt.title(f"Lead {lead+1:02d}h MAE by Wind Level")
 
-        # 可选：把样本数写在 x 轴下方（避免你误解某些风级样本很少）
-        for i in range(len(labels)):
-            plt.text(x[i], 0, f"n={cnt[i]}", ha="center", va="bottom", fontsize=8, rotation=0)
+    #     # 可选：把样本数写在 x 轴下方（避免你误解某些风级样本很少）
+    #     for i in range(len(labels)):
+    #         plt.text(x[i], 0, f"n={cnt[i]}", ha="center", va="bottom", fontsize=8, rotation=0)
 
-        plt.grid(axis='y', alpha=0.3)
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(f"{kaggle_dir}mae_by_windlevel_lead{lead+1:02d}.png", dpi=160)
-        plt.close()
+    #     plt.grid(axis='y', alpha=0.3)
+    #     plt.legend()
+    #     plt.tight_layout()
+    #     plt.savefig(f"{kaggle_dir}mae_by_windlevel_lead{lead+1:02d}.png", dpi=160)
+    #     plt.close()
 ###########################################################################################################
     t_all = trues.reshape(-1).astype(float)           # True
     p_all = preds.reshape(-1).astype(float)           # Pred
